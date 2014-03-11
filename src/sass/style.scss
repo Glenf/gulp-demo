@@ -1,0 +1,11 @@
+$fontSize : 2.2em;
+$bgColor : #ccc;
+
+body {
+	padding : 1em;
+	background-color : $bgColor;
+}
+
+h1 {
+	font-size : $fontSize;
+}
