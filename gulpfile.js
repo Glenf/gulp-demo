@@ -1,6 +1,8 @@
 var pkg = require('./package.json'),
     gulp = require('gulp'),
     gutil = require('gulp-util'),
+    es = require('event-stream'),
+    clean = require('gulp-clean'),
     jade = require('gulp-jade'),
     sass = require('gulp-ruby-sass'),
     minifycss = require('gulp-minify-css'),
@@ -22,7 +24,8 @@ var options = {
         'serve' : './.dev/',
         'templates' : './src/**/*.jade',
         'styles' : './src/styles/**/*.scss',
-        'scripts' : './src/scripts/**/*.js'
+        'scripts' : './src/scripts/**/*.js',
+        'tmp' : '.tmp/'
     },
     jade : {
         'data' : pkg,
@@ -43,6 +46,18 @@ var options = {
 };
 
 //
+// CLEAN
+// Let's clean some directories
+gulp.task('clean', function () {
+    gulp.src(options.paths.tmp, {read : false})
+        .pipe(clean());
+    gulp.src(options.paths.serve, {read : false})
+        .pipe(clean());
+    gulp.src(options.paths.build, {read : false})
+        .pipe(clean());
+});
+
+//
 // TEMPLATES
 //
 gulp.task('templates', function () {
@@ -55,10 +70,17 @@ gulp.task('templates', function () {
 //
 // STYLES
 //
-gulp.task('styles', function () {
-    return gulp.src(options.paths.styles)
+gulp.task('sass', function () {
+    gulp.src(options.paths.styles)
         .pipe(sass(options.sass))
         .pipe(autoprefixer())
+        .pipe(gulp.dest(options.paths.tmp));
+});
+
+gulp.task('styles', ['sass'], function () {
+    var bs = 'bower_components/twitter/dist/css/bootstrap.css';
+    gulp.src([bs, options.paths.tmp + '*.css'])
+        .pipe(concat('style.css'))
         .pipe(gulp.dest(options.paths.build + '/css/'))
         .pipe(connect.reload());
 });
@@ -71,8 +93,33 @@ gulp.task('lint-scripts', function () {
         .pipe(jshint(options.jshint));
 });
 
+gulp.task('vendorscripts', ['scripts'], function () {
+    var vendor = [
+        'bower_components/jquery/dist/jquery.js',
+        'bower_components/jquery-ui/ui/jquery-ui.js',
+        'bower_components/twitter/dist/js/bootstrap.js',
+        'bower_components/enquire/dist/enquire.js',
+        'bower_components/fastclick/lib/fastclick.js',
+        'bower_components/flexslider/jquery.flexslider.js',
+        'bower_components/hoverintent/jquery.hoverIntent.js',
+        'bower_components/jquery-placeholder/jquery.placeholder.js',
+        'bower_components/jquery-waypoints/waypoints.js',
+        'bower_components/jquery.cookie/jquery.cookie.js',
+        'bower_components/modernizr/modernizr.js',
+        'bower_components/superfish/dist/js/superfish.js',
+        'bower_components/nanoscroller/bin/javascripts/jquery.nanoscroller.js'        
+    ];
+
+    gulp.src(vendor)
+        .pipe(concat('vendor.js'))
+        .pipe(uglify())
+        .pipe(gulp.dest(options.paths.build + '/js/'));
+
+});
+
 gulp.task('scripts', ['lint-scripts'], function () {
     gulp.src(options.paths.scripts)
+        .pipe(concat('app.js'))
         .pipe(gulp.dest(options.paths.build + '/js/'))
         .pipe(connect.reload());
 });
@@ -93,9 +140,9 @@ gulp.task('server', connect.server({
     }
 }));
 
-gulp.task('build', ['templates', 'styles', 'scripts']);
+gulp.task('build', ['templates', 'styles', 'scripts', 'vendorscripts']);
 
-gulp.task('devPaths', function () {
+gulp.task('devPaths', ['clean'], function () {
     options.paths.build = options.paths.serve;
     options.jade.pretty = true;
     options.sass.sourcemap = true;
@@ -108,6 +155,6 @@ gulp.task('watch', function () {
     gulp.watch([options.paths.scripts], ['scripts']);
 });
 
-gulp.task('dev', ['devPaths', 'build', 'server', 'watch']);
+gulp.task('dev', ['clean','devPaths', 'build', 'server', 'watch']);
 
 gulp.task('default', ['dev']);
