@@ -3,6 +3,7 @@ var pkg = require('./package.json'),
     gutil = require('gulp-util'),
     jade = require('gulp-jade'),
     sass = require('gulp-ruby-sass'),
+    minifycss = require('gulp-minify-css'),
     autoprefixer = require('gulp-autoprefixer'),
     concat = require('gulp-concat'),
     uglify = require('gulp-uglify'),
@@ -19,9 +20,9 @@ var options = {
     paths : {
         'build' : './dist/',
         'serve' : './.dev/',
-        'templates' : './src/jade/**/*.jade',
-        'styles' : './src/sass/**/*.scss',
-        'scripts' : './src/js/**/*.js'
+        'templates' : './src/**/*.jade',
+        'styles' : './src/styles/**/*.scss',
+        'scripts' : './src/scripts/**/*.js'
     },
     jade : {
         'data' : pkg,
@@ -69,11 +70,15 @@ gulp.task('lint-scripts', function () {
     gulp.src(options.paths.scripts)
         .pipe(jshint(options.jshint));
 });
+
 gulp.task('scripts', ['lint-scripts'], function () {
-    return gulp.src(options.paths.scripts)
+    gulp.src(options.paths.scripts)
         .pipe(gulp.dest(options.paths.build + '/js/'))
         .pipe(connect.reload());
 });
+
+
+
 
 //
 // SERVER
@@ -105,6 +110,4 @@ gulp.task('watch', function () {
 
 gulp.task('dev', ['devPaths', 'build', 'server', 'watch']);
 
-gulp.task('default', function () {
-    // Default tasks here
-});
+gulp.task('default', ['dev']);
