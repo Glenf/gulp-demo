@@ -1,0 +1,31 @@
+.navbar.navbar-inverse.navbar-fized-top(role="navigation")
+    .container
+        .navbar-header
+            button.navbar-toggle(type="button",data-toggle="collapse",data-target=".navbar-collapse")
+                span.s-only Toggle navigatio
+                span.icon-bar
+                span.icon-bar
+                span.icon-bar
+            a.navbar-brand(href="#") Symbio
+        .navbar-collapse.collapse
+            ul.nav.navbar-nav
+                li.active: a Home
+                li: a About
+                li: a Contact
+                li.dropdown
+                    a.dropdown-toggle(data-toggle="dropdown") Dropdown
+                        b.caret
+                    ul.dropdown-menu
+                        li: a Lights
+                        li: a Camera
+                        li.divider
+                        li.dropdown-header Action
+                        li: a Engage
+
+
+            form.navbar-form.navbar-right(role="form")
+                .form-group
+                    input.form-control(type="email",placeholder="Email")
+                .form-group
+                    input.form-control(type="password",placeholder="Password")
+                button.btn.btn-success(type="submit") Sign in
